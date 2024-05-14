@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.RadioButton;
@@ -19,6 +20,8 @@ import org.webrtc.RendererCommon;
 import org.webrtc.SurfaceViewRenderer;
 
 import java.util.List;
+
+import rxhttp.wrapper.utils.LogUtil;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -45,7 +48,7 @@ public class MainActivity extends AppCompatActivity {
         ed2 = findViewById(R.id.ed2);
         long time = System.currentTimeMillis() / 1000;
         ed1.setText("webrtc://192.168.1.139/live/livestream");
-        ed2.setText("webrtc://192.168.1.139/live/livestream");
+        ed2.setText("webrtc://117.50.160.74/live/55315");
         rbPushAudio = findViewById(R.id.rbPushAudio);
         rbPushVideo = findViewById(R.id.rbPushVideo);
         rbPlayVideo = findViewById(R.id.rbPlayVideo);
@@ -142,8 +145,8 @@ public class MainActivity extends AppCompatActivity {
     private WebRtcUtil webRtcUtil2;
 
     private void doPlay() {
-        String text = ed2.getEditableText().toString();
-        if (TextUtils.isEmpty(text)) {
+        String playUrl = ed2.getEditableText().toString();
+        if (TextUtils.isEmpty(playUrl)) {
             Toast.makeText(MainActivity.this, "拉流地址为空!", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -151,15 +154,15 @@ public class MainActivity extends AppCompatActivity {
             webRtcUtil2.destroy();
         }
         webRtcUtil2 = new WebRtcUtil(MainActivity.this);
-        webRtcUtil2.create(mRootEglBase, rbPlayVideo.isChecked() ? surfaceViewRenderer2 : null, false, rbPlayVideo.isChecked(), text, new WebRtcUtil.WebRtcCallBack() {
+        webRtcUtil2.create(mRootEglBase, rbPlayVideo.isChecked() ? surfaceViewRenderer2 : null, false, rbPlayVideo.isChecked(), playUrl, new WebRtcUtil.WebRtcCallBack() {
             @Override
             public void onSuccess() {
-
+                Log.e("TAG", "webRtcUtil2 -> onSuccess:");
             }
 
             @Override
             public void onFail() {
-
+                Log.e("TAG", "webRtcUtil2 -> onFail:");
             }
         });
     }

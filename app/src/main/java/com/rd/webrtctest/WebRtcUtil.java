@@ -1,5 +1,6 @@
 package com.rd.webrtctest;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.media.MediaCodecInfo;
 import android.text.TextUtils;
@@ -167,6 +168,7 @@ public class WebRtcUtil implements PeerConnection.Observer, SdpObserver {
                 peerConnection.addTrack(videoTrack);
             }
         }
+        // 发送offer，创建WebRTC连接
         peerConnection.createOffer(this, mediaConstraints);
     }
 
@@ -175,26 +177,26 @@ public class WebRtcUtil implements PeerConnection.Observer, SdpObserver {
     private final VideoProcessor videoProcessor = new VideoProcessor() {
         @Override
         public void setSink(@Nullable VideoSink videoSink) {
-            Log.i(TAG, "setSink: ");
+            Log.e(TAG, "setSink: ");
         }
 
         @Override
         public void onCapturerStarted(boolean b) {
-            Log.i(TAG, "onCapturerStarted: ");
+            Log.e(TAG, "onCapturerStarted: ");
             h264Encoder = new H264Encoder(VIDEO_RESOLUTION_WIDTH, VIDEO_RESOLUTION_HEIGHT, FPS, VIDEO_RESOLUTION_WIDTH * VIDEO_RESOLUTION_HEIGHT * 5);
             h264Encoder.StartEncoderThread();
         }
 
         @Override
         public void onCapturerStopped() {
-            Log.i(TAG, "onCapturerStopped: ");
+            Log.e(TAG, "onCapturerStopped: ");
             h264Encoder.StopThread();
             h264Encoder = null;
         }
 
         @Override
         public void onFrameCaptured(VideoFrame videoFrame) {
-            Log.i(TAG, "onFrameCaptured: w = " + videoFrame.getBuffer().getWidth() + ", h = " + videoFrame.getBuffer().getHeight());
+            Log.e(TAG, "onFrameCaptured: w = " + videoFrame.getBuffer().getWidth() + ", h = " + videoFrame.getBuffer().getHeight());
             if (H264Encoder.YUVQueue.size() >= 10) {
                 H264Encoder.YUVQueue.poll();
             }
@@ -277,11 +279,13 @@ public class WebRtcUtil implements PeerConnection.Observer, SdpObserver {
     public static final String API = "http://%s:1985/rtc/v1/play/";
     public static final String STREAM_URL = "webrtc://%s/live/livestream";
 
+    @SuppressLint("CheckResult")
     public void openWebRtc(String sdp) {
         PlayBodyBean playBodyBean = new PlayBodyBean();
         //解析ip
         String serverIp = getIps(playUrl).get(0);
-        String streamUrl = String.format(STREAM_URL, serverIp);
+//        String streamUrl = String.format(STREAM_URL, serverIp);
+        String streamUrl = playUrl;
         String api = String.format(API, serverIp);
         if (isPublish) {
             api = api.replace("play", "publish");
@@ -291,15 +295,15 @@ public class WebRtcUtil implements PeerConnection.Observer, SdpObserver {
         playBodyBean.setStreamurl(streamUrl);
         playBodyBean.setSdp(sdp);
         String body = GsonUtil.toJson(playBodyBean);
-        Log.i(TAG, "openWebRtc: api = " + playBodyBean.getApi());
-        Log.i(TAG, "openWebRtc: clientIp = " + playBodyBean.getClientip());
-        Log.i(TAG, "openWebRtc: streamurl = " + playBodyBean.getStreamurl());
+        Log.e(TAG, "openWebRtc: api = " + playBodyBean.getApi());
+        Log.e(TAG, "openWebRtc: clientIp = " + playBodyBean.getClientip());
+        Log.e(TAG, "openWebRtc: streamurl = " + playBodyBean.getStreamurl());
         RxHttp.postBody(api)
                 .setBody(body, MediaType.parse("json:application/json;charset=utf-8"))
                 .asString()
                 .subscribe(s -> {
                     s = s.replaceAll("\n", "");
-                    Log.i(TAG, "openWebRtc: result = " + s);
+                    Log.e(TAG, "openWebRtc: result = " + s);
                     if (!TextUtils.isEmpty(s)) {
                         SdpBean sdpBean = new Gson().fromJson(s, SdpBean.class);
                         if (sdpBean.getCode() == 400) {
@@ -354,10 +358,10 @@ public class WebRtcUtil implements PeerConnection.Observer, SdpObserver {
     }
 
     public void setRemoteSdp(String sdp) {
-        Log.i(TAG, "setRemoteSdp: ");
+        Log.e(TAG, "setRemoteSdp: ");
         if (peerConnection != null) {
             SessionDescription remoteSpd = new SessionDescription(SessionDescription.Type.ANSWER, sdp);
-            Log.i(TAG, "setRemoteDescription: ");
+            Log.e(TAG, "setRemoteDescription: ");
             peerConnection.setRemoteDescription(this, remoteSpd);
         }
     }
@@ -395,16 +399,19 @@ public class WebRtcUtil implements PeerConnection.Observer, SdpObserver {
                 new VideoEncoderSupportedCallback() {
                     @Override
                     public boolean isSupportedH264(@NonNull MediaCodecInfo info) {
+                        Log.e(TAG, "isSupportedH264: ");
                         return true;
                     }
 
                     @Override
                     public boolean isSupportedVp8(@NonNull MediaCodecInfo info) {
+                        Log.e(TAG, "isSupportedVp8: ");
                         return false;
                     }
 
                     @Override
                     public boolean isSupportedVp9(@NonNull MediaCodecInfo info) {
+                        Log.e(TAG, "isSupportedVp9: ");
                         return false;
                     }
                 });
@@ -436,6 +443,7 @@ public class WebRtcUtil implements PeerConnection.Observer, SdpObserver {
 
     @Override
     public void onCreateSuccess(SessionDescription sdp) {
+        Log.e(TAG, "onCreateSuccess: ");
         if (sdp.type == SessionDescription.Type.OFFER) {
             //设置setLocalDescription offer返回sdp
             peerConnection.setLocalDescription(this, sdp);
@@ -448,73 +456,74 @@ public class WebRtcUtil implements PeerConnection.Observer, SdpObserver {
 
     @Override
     public void onSetSuccess() {
-        Log.i(TAG, "onSetSuccess: ");
+        Log.e(TAG, "onSetSuccess: ");
     }
 
     @Override
     public void onCreateFailure(String error) {
-        Log.i(TAG, "onCreateFailure: ");
+        Log.e(TAG, "onCreateFailure: ");
     }
 
     @Override
     public void onSetFailure(String error) {
-        Log.i(TAG, "onSetFailure: ");
+        Log.e(TAG, "onSetFailure: ");
     }
 
     @Override
     public void onSignalingChange(PeerConnection.SignalingState newState) {
-        Log.i(TAG, "onSignalingChange: ");
+        Log.e(TAG, "onSignalingChange: ");
     }
 
     @Override
     public void onIceConnectionChange(PeerConnection.IceConnectionState newState) {
-        Log.i(TAG, "onIceConnectionChange: ");
+        Log.e(TAG, "onIceConnectionChange: ");
     }
 
     @Override
     public void onIceConnectionReceivingChange(boolean receiving) {
-        Log.i(TAG, "onIceConnectionReceivingChange: ");
+        Log.e(TAG, "onIceConnectionReceivingChange: ");
     }
 
     @Override
     public void onIceGatheringChange(PeerConnection.IceGatheringState newState) {
-        Log.i(TAG, "onIceGatheringChange: ");
+        Log.e(TAG, "onIceGatheringChange: ");
     }
 
     @Override
     public void onIceCandidate(IceCandidate candidate) {
         peerConnection.addIceCandidate(candidate);
-        Log.i(TAG, "onIceCandidate: ");
+        Log.e(TAG, "onIceCandidate: ");
     }
 
     @Override
     public void onIceCandidatesRemoved(IceCandidate[] candidates) {
         peerConnection.removeIceCandidates(candidates);
-        Log.i(TAG, "onIceCandidatesRemoved: ");
+        Log.e(TAG, "onIceCandidatesRemoved: ");
     }
 
     @Override
     public void onAddStream(MediaStream stream) {
-        Log.i(TAG, "onAddStream: ");
+        Log.e(TAG, "onAddStream: ");
     }
 
     @Override
     public void onRemoveStream(MediaStream stream) {
-        Log.i(TAG, "onRemoveStream: ");
+        Log.e(TAG, "onRemoveStream: ");
     }
 
     @Override
     public void onDataChannel(DataChannel dataChannel) {
-        Log.i(TAG, "onDataChannel: ");
+        Log.e(TAG, "onDataChannel: ");
     }
 
     @Override
     public void onRenegotiationNeeded() {
-        Log.i(TAG, "onRenegotiationNeeded: ");
+        Log.e(TAG, "onRenegotiationNeeded: ");
     }
 
     @Override
     public void onAddTrack(RtpReceiver receiver, MediaStream[] mediaStreams) {
+        Log.e(TAG, "onAddTrack: ");
         MediaStreamTrack track = receiver.track();
         if (track instanceof VideoTrack) {
             VideoTrack remoteVideoTrack = (VideoTrack) track;

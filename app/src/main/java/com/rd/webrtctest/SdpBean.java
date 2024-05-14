@@ -5,8 +5,6 @@ import com.google.gson.annotations.SerializedName;
 /**
  * @author haimian on 2021/4/22 0022
  */
-@lombok.NoArgsConstructor
-@lombok.Data
 public class SdpBean {
     /**
      * code : 0
@@ -50,12 +48,40 @@ public class SdpBean {
      * sessionid : 85beu046:Rlqi
      */
 
-    @SerializedName("code")
     private int code;
-    @SerializedName("server")
     private String server;
-    @SerializedName("sdp")
     private String sdp;
-    @SerializedName("sessionid")
     private String sessionid;
+
+    public int getCode() {
+        return code;
+    }
+
+    public void setCode(int code) {
+        this.code = code;
+    }
+
+    public String getServer() {
+        return server;
+    }
+
+    public void setServer(String server) {
+        this.server = server;
+    }
+
+    public String getSdp() {
+        return sdp;
+    }
+
+    public void setSdp(String sdp) {
+        this.sdp = sdp;
+    }
+
+    public String getSessionid() {
+        return sessionid;
+    }
+
+    public void setSessionid(String sessionid) {
+        this.sessionid = sessionid;
+    }
 }
